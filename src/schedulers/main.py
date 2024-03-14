@@ -7,24 +7,12 @@ import asyncio
 
 # this code is inside the library
 
-def coroutine(func):
-    co = func.__code__
-    func.__code__ = co.replace(co_flags=co.co_flags | 0x100)
-    return func
-
-@coroutine
-def suspend():
-    yield
-
-
 async def retry(func, *args, **kwds):
     while True:
         try:
             coro = func(*args, **kwds)
             return await coro
         except:
-            await suspend()
-            print(f"error: {coro.__name__}(args={args}, kwds={kwds})", file=sys.stderr)
             continue
 
 # ==========
@@ -34,6 +22,7 @@ async def retry(func, *args, **kwds):
 async def fail(n):
     """ sometimes tasks fail """
     import random
+    await asyncio.sleep(0)
     if random.random() < 0.99:
         raise RuntimeError("no")
     return n
