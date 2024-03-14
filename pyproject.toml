@@ -1,0 +1,19 @@
+[project]
+name = "schedulers"
+version = "0.0.1"
+authors = [
+    { name="Jason Wilkes", email="notarealdeveloper@gmail.com" },
+    { name="Ramya Kottapalli", email="rskottap@gmail.com" },
+]
+description = "Schedulers"
+dependencies = []
+
+[project.optional-dependencies]
+develop = [
+    "build",
+    "pytest",
+]
+
+[project.urls]
+source = "https://github.com/notarealdeveloper/schedulers"
+download = "https://pypi.org/project/schedulers/#files"
