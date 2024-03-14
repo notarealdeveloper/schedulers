@@ -7,7 +7,12 @@ import asyncio
 
 # this code is inside the library
 
-@types.coroutine
+def coroutine(func):
+    co = func.__code__
+    func.__code__ = co.replace(co_flags=co.co_flags | 0x100)
+    return func
+
+@coroutine
 def suspend():
     yield
 
