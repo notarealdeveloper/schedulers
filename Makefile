@@ -11,7 +11,7 @@ uninstall:
 	pip uninstall $(PKG)
 
 develop:
-	pip install -e .[develop]
+	pip install -e .
 
 check:
 	pytest -v tests/
