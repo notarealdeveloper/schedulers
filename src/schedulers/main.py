@@ -45,17 +45,15 @@ async def run_streamed(jobs, n):
     async def wrap(coro):
         async with sem:
             return await coro
-    while jobs:
-        batch = jobs[:n]
-        coros = [wrap(func(*args, **kwds)) for (func, args, kwds) in batch]
-        results += await asyncio.gather(*coros)
-        jobs = jobs[n:]
+    coros = [wrap(func(*args, **kwds)) for (func, args, kwds) in jobs]
+    results += await asyncio.gather(*coros)
     return results
 
 async def run_rate_limited(jobs, jobs_per_sec):
     results = []
     import time
     from collections import deque
+    n = jobs_per_sec
     times = deque([], maxlen=n)
     sem = asyncio.Semaphore(n)
     global_start = time.time()
@@ -69,13 +67,10 @@ async def run_rate_limited(jobs, jobs_per_sec):
                 total_secs = time.time() - global_start
                 if (num_done < jobs_per_sec*total_secs):
                     break
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0)
         return result
-    while jobs:
-        batch = jobs[:n]
-        coros = [limiter(func(*args, **kwds), k) for k, (func, args, kwds) in enumerate(batch)]
-        results += await asyncio.gather(*coros)
-        jobs = jobs[n:]
+    coros = [limiter(func(*args, **kwds), k) for k, (func, args, kwds) in enumerate(jobs)]
+    results += await asyncio.gather(*coros)
     return results
 
 # ==========
@@ -87,7 +82,7 @@ async def fail(n):
     import random
     await asyncio.sleep(0)
     print(f"fail({n}): entering")
-    if random.random() < 0.50:
+    if random.random() < 0.99:
         print(f"fail({n}): failed")
         raise RuntimeError("no")
     print(f"fail({n}): finished")
@@ -114,7 +109,7 @@ async def main():
 
 async def main():
     jobs = [(retry, (fail, n), {}) for n in range(100)]
-    return await run_rate_limited(jobs, 10)
+    return await run_rate_limited(jobs, jobs_per_sec=10)
 
 results = asyncio.run(main())
 
