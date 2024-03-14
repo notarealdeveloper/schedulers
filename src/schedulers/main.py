@@ -61,15 +61,37 @@ async def fail(n):
     import random
     await asyncio.sleep(0)
     print(f"fail({n}): entering")
-    if random.random() < 0.99:
+    if random.random() < 0.50:
         print(f"fail({n}): failed")
         raise RuntimeError("no")
     print(f"fail({n}): finished")
     return n
 
+async def succeed(n):
+    """ sometimes tasks succeed """
+    print(f"succeed({n}): entering")
+    await asyncio.sleep(0)
+    print(f"succeed({n}): finished")
+    return n
+
 async def main():
     jobs = [(retry, (fail, n), {}) for n in range(100)]
-    return await run_streamed(jobs)
+    return await run(jobs)
+
+async def main():
+    jobs = [(retry, (fail, n), {}) for n in range(100)]
+    return await run_batched(jobs, 10)
+
+async def main():
+    from slower import Slower
+    seconds = 1
+    async def wrap(coro, s):
+        await s.acquire()
+        return await coro
+    async with Slower(5, seconds) as s:
+        #jobs = [(retry, (fail, n), {}) for n in range(100)]
+        jobs = [wrap(fail(n), s) for n in range(100)]
+        return await asyncio.gather(*jobs)
 
 results = asyncio.run(main())
 
